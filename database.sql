@@ -1,11 +1,7 @@
 -- SmartCard Database Schema
--- Run this SQL in your MySQL database
-
-CREATE DATABASE IF NOT EXISTS smartcard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE smartcard;
 
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
@@ -17,7 +13,7 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Business cards table
-CREATE TABLE cards (
+CREATE TABLE IF NOT EXISTS cards (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   title VARCHAR(100),
@@ -33,7 +29,7 @@ CREATE TABLE cards (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Card links (social media, contact info)
-CREATE TABLE card_links (
+CREATE TABLE IF NOT EXISTS card_links (
   id INT AUTO_INCREMENT PRIMARY KEY,
   card_id INT NOT NULL,
   type VARCHAR(30),
@@ -45,7 +41,7 @@ CREATE TABLE card_links (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Card views analytics
-CREATE TABLE card_views (
+CREATE TABLE IF NOT EXISTS card_views (
   id INT AUTO_INCREMENT PRIMARY KEY,
   card_id INT NOT NULL,
   visitor_ip VARCHAR(45),
@@ -57,7 +53,7 @@ CREATE TABLE card_views (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Card leads
-CREATE TABLE card_leads (
+CREATE TABLE IF NOT EXISTS card_leads (
   id INT AUTO_INCREMENT PRIMARY KEY,
   card_id INT NOT NULL,
   lead_name VARCHAR(120) NOT NULL,
