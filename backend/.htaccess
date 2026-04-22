@@ -1,0 +1,23 @@
+Options -Indexes
+
+# CORS Headers
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+# Handle preflight OPTIONS requests
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Route /api/* to the correct file in /api/
+RewriteRule ^api/auth(.*)$ api/auth.php [QSA,L]
+RewriteRule ^api/cards/public/([^/]+)$ api/cards.php?action=public&slug=$1 [QSA,L]
+RewriteRule ^api/cards/upload$ api/cards.php?action=upload [QSA,L]
+RewriteRule ^api/cards/([0-9]+)$ api/cards.php?id=$1 [QSA,L]
+RewriteRule ^api/cards(.*)$ api/cards.php [QSA,L]
+RewriteRule ^api/qr/([^/]+)$ api/qr.php?slug=$1 [QSA,L]
+RewriteRule ^api/analytics/view$ api/analytics.php?action=view [QSA,L]
+RewriteRule ^api/analytics/([0-9]+)$ api/analytics.php?card_id=$1 [QSA,L]
+RewriteRule ^api/vcf/([^/]+)$ api/vcf.php?slug=$1 [QSA,L]
+RewriteRule ^api/leads$ api/leads.php [QSA,L]
