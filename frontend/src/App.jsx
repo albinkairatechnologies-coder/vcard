@@ -19,9 +19,10 @@ export default function App() {
         <Route path="/register"  element={<Register />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/editor"    element={<PrivateRoute><ProfileEditor /></PrivateRoute>} />
+        <Route path="/builder"   element={<Navigate to="/editor" replace />} />
         <Route path="/card/:slug" element={<EditorPublicCard />} />
-        <Route path="/:slug"     element={<PublicCard />} />
         <Route path="/"          element={<Home />} />
+        <Route path="/:slug"     element={<PublicCard />} />
       </Routes>
     </BrowserRouter>
   )

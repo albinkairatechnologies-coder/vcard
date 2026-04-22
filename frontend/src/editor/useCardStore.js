@@ -38,16 +38,44 @@ export function useCardStore() {
   const [card, setCard] = useState(() => {
     try {
       const saved = localStorage.getItem('smartcard_editor')
-      return saved ? { ...DEFAULT_CARD, ...JSON.parse(saved) } : DEFAULT_CARD
+      if (!saved) return DEFAULT_CARD
+      const parsed = JSON.parse(saved)
+      // Clear stale localhost image URLs
+      if (
+        parsed.profilePhoto?.includes('localhost') ||
+        parsed.coverPhoto?.includes('localhost') ||
+        parsed.companyLogo?.includes('localhost') ||
+        parsed.virtualBg?.custom?.includes('localhost')
+      ) {
+        return {
+          ...DEFAULT_CARD, ...parsed,
+          profilePhoto: '',
+          coverPhoto: '',
+          companyLogo: '',
+          virtualBg: { ...(parsed.virtualBg || {}), custom: '' },
+        }
+      }
+      return { ...DEFAULT_CARD, ...parsed }
     } catch { return DEFAULT_CARD }
   })
 
   useEffect(() => {
-    localStorage.setItem('smartcard_editor', JSON.stringify(card))
+    const { profilePhoto, coverPhoto, companyLogo, virtualBg, ...rest } = card
+    // Only save http URLs and data: URLs (for unsaved uploads), clear blob: URLs
+    localStorage.setItem('smartcard_editor', JSON.stringify({
+      ...rest,
+      profilePhoto: (profilePhoto?.startsWith('http') || profilePhoto?.startsWith('data:')) ? profilePhoto : '',
+      coverPhoto: (coverPhoto?.startsWith('http') || coverPhoto?.startsWith('data:')) ? coverPhoto : '',
+      companyLogo: (companyLogo?.startsWith('http') || companyLogo?.startsWith('data:')) ? companyLogo : '',
+      virtualBg: { ...virtualBg, custom: (virtualBg?.custom?.startsWith('http') || virtualBg?.custom?.startsWith('data:')) ? virtualBg.custom : '' },
+    }))
   }, [card])
 
   const update = useCallback((key, value) =>
     setCard(prev => ({ ...prev, [key]: value })), [])
+
+  const setAll = useCallback((data) =>
+    setCard(prev => ({ ...prev, ...data })), [])
 
   const updateNested = useCallback((key, subKey, value) =>
     setCard(prev => ({ ...prev, [key]: { ...prev[key], [subKey]: value } })), [])
@@ -85,5 +113,5 @@ export function useCardStore() {
       customFields: { ...prev.customFields, [section]: fields },
     })), [])
 
-  return { card, update, updateNested, addCustomField, removeCustomField, updateCustomField, reorderCustomFields }
+  return { card, update, setAll, updateNested, addCustomField, removeCustomField, updateCustomField, reorderCustomFields }
 }

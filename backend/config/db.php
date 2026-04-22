@@ -2,8 +2,8 @@
 define('DB_HOST', 'localhost');
 define('DB_PORT', '3306');
 define('DB_NAME', 'kairatec_mobilevcard');
-define('DB_USER', 'YOUR_BLUEHOST_DB_USER');
-define('DB_PASS', 'YOUR_BLUEHOST_DB_PASS');
+define('DB_USER', 'kairatec_mobilevcard');
+define('DB_PASS', 'your_actual_password_here');
 
 function getDB(): PDO {
     static $pdo = null;

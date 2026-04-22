@@ -43,7 +43,7 @@ function TextareaField({ label, name, value, onChange, placeholder, maxLength })
 }
 
 export default function ProfileEditor() {
-  const { card, update, updateNested, addCustomField, removeCustomField, updateCustomField, reorderCustomFields } = useCardStore()
+  const { card, update, setAll, updateNested, addCustomField, removeCustomField, updateCustomField, reorderCustomFields } = useCardStore()
   const previewRef = useRef()
   const importRef = useRef()
   const [previewVisible, setPreviewVisible] = useState(true)
@@ -62,7 +62,7 @@ export default function ProfileEditor() {
       data: {
         jobTitle: 'Sales Director',
         headline: 'Helping teams increase pipeline through smarter event networking.',
-        ctaLabel: 'Book a Meeting',
+        ctaLabel: 'Save Contact',
         leadSource: 'Conference Booth',
       },
     },
@@ -72,7 +72,7 @@ export default function ProfileEditor() {
       data: {
         jobTitle: 'Founder',
         headline: 'Building products that turn first conversations into lasting customers.',
-        ctaLabel: 'Schedule Intro Call',
+        ctaLabel: 'Save Contact',
         leadSource: 'Warm Referral',
       },
     },
@@ -82,7 +82,7 @@ export default function ProfileEditor() {
       data: {
         jobTitle: 'Business Consultant',
         headline: 'Strategy, systems, and execution support for scaling teams.',
-        ctaLabel: 'Request Proposal',
+        ctaLabel: 'Save Contact',
         leadSource: 'LinkedIn',
       },
     },
@@ -92,49 +92,52 @@ export default function ProfileEditor() {
     const safeLinks = Array.isArray(payload.links) ? payload.links : []
     const linkByType = (type) => safeLinks.find((l) => l.type === type)?.url || ''
     const metaByType = (type) => safeLinks.find((l) => l.type === type)?.url || ''
-    const uploadsBase = 'http://localhost/smartcard/backend/uploads/'
+    const baseUrl = import.meta.env.VITE_API_BASE?.replace('/api', '') || 'https://kairatechnologies.co.in/demo/vcard'
+    const uploadsBase = `${baseUrl}/uploads/`
     const profileFile = safeLinks.find((l) => l.type === 'meta_profile')?.url || payload.photo || ''
-    const coverFile = safeLinks.find((l) => l.type === 'meta_cover')?.url || ''
-    const logoFile = safeLinks.find((l) => l.type === 'meta_logo')?.url || ''
-    const linkLabel = safeLinks.find((l) => l.type === 'custom')?.label || ''
-    const linkUrl = safeLinks.find((l) => l.type === 'custom')?.url || ''
-    const social = ['twitter', 'instagram', 'threads', 'linkedin', 'facebook', 'youtube', 'snapchat', 'tiktok', 'twitch', 'yelp']
-    const messaging = ['whatsapp', 'signal', 'discord', 'skype', 'telegram']
-    const business = ['github', 'calendly']
+    const coverFile   = safeLinks.find((l) => l.type === 'meta_cover')?.url || ''
+    const logoFile    = safeLinks.find((l) => l.type === 'meta_logo')?.url || ''
+    const vBgFile     = safeLinks.find((l) => l.type === 'meta_vBg_custom')?.url || ''
+    const social      = ['twitter', 'instagram', 'threads', 'linkedin', 'facebook', 'youtube', 'snapchat', 'tiktok', 'twitch', 'yelp']
+    const messaging   = ['whatsapp', 'signal', 'discord', 'skype', 'telegram']
+    const business    = ['github', 'calendly']
 
-    update('name', metaByType('meta_name') || payload.name || '')
-    update('jobTitle', payload.title || '')
-    update('department', metaByType('meta_department') || '')
-    update('accreditations', metaByType('meta_accreditations') || '')
-    update('companyName', metaByType('meta_company') || payload.company || '')
-    update('headline', payload.bio || '')
-    update('profilePhoto', profileFile ? `${uploadsBase}${profileFile}` : '')
-    update('coverPhoto', coverFile ? `${uploadsBase}${coverFile}` : '')
-    update('companyLogo', logoFile ? `${uploadsBase}${logoFile}` : '')
-    update('email', metaByType('meta_email') || payload.email || '')
-    update('phone', linkByType('phone'))
-    update('companyUrl', linkByType('website'))
-    update('customLinkLabel', linkLabel)
-    update('customLink', linkUrl)
-    update('address', metaByType('meta_address') || '')
-    update('leadSource', metaByType('meta_leadSource') || '')
-    update('leadTags', metaByType('meta_leadTags') || '')
-    update('followUpDate', metaByType('meta_followUpDate') || '')
-    update('meetingNote', metaByType('meta_meetingNote') || '')
-    update('ctaLabel', metaByType('meta_ctaLabel') || '')
-    update('ctaUrl', metaByType('meta_ctaUrl') || '')
-    update('themeColor', metaByType('meta_themeColor') || payload.theme || '#6366f1')
-    
-    const vBgEnabled = metaByType('meta_vBg_enabled') === 'true'
-    const vBgPreset = metaByType('meta_vBg_preset') || ''
-    const vBgCustomFile = metaByType('meta_vBg_custom') || ''
-    updateNested('virtualBg', 'enabled', vBgEnabled)
-    updateNested('virtualBg', 'preset', vBgPreset)
-    updateNested('virtualBg', 'custom', vBgCustomFile ? `${uploadsBase}${vBgCustomFile}` : '')
+    const socialData = {}
+    social.forEach(key => { socialData[key] = linkByType(key) })
+    messaging.forEach(key => { socialData[key] = linkByType(key) })
+    business.forEach(key => { socialData[key] = linkByType(key) })
 
-    social.forEach((key) => update(key, linkByType(key)))
-    messaging.forEach((key) => update(key, linkByType(key)))
-    business.forEach((key) => update(key, linkByType(key)))
+    // Single batch update — one localStorage save with ALL fields including images
+    setAll({
+      name:           metaByType('meta_name')           || payload.name    || '',
+      jobTitle:       payload.title                     || '',
+      department:     metaByType('meta_department')     || '',
+      accreditations: metaByType('meta_accreditations') || '',
+      companyName:    metaByType('meta_company')        || payload.company || '',
+      headline:       payload.bio                       || '',
+      profilePhoto:   profileFile ? `${uploadsBase}${profileFile}` : '',
+      coverPhoto:     coverFile   ? `${uploadsBase}${coverFile}`   : '',
+      companyLogo:    logoFile    ? `${uploadsBase}${logoFile}`    : '',
+      email:          metaByType('meta_email')          || payload.email   || '',
+      phone:          linkByType('phone'),
+      companyUrl:     linkByType('website'),
+      customLinkLabel: safeLinks.find((l) => l.type === 'custom')?.label || '',
+      customLink:     linkByType('custom'),
+      address:        metaByType('meta_address')        || '',
+      leadSource:     metaByType('meta_leadSource')     || '',
+      leadTags:       metaByType('meta_leadTags')       || '',
+      followUpDate:   metaByType('meta_followUpDate')   || '',
+      meetingNote:    metaByType('meta_meetingNote')    || '',
+      ctaLabel:       metaByType('meta_ctaLabel')       || '',
+      ctaUrl:         metaByType('meta_ctaUrl')         || '',
+      themeColor:     metaByType('meta_themeColor')     || payload.theme   || '#6366f1',
+      virtualBg: {
+        enabled: metaByType('meta_vBg_enabled') === 'true',
+        preset:  metaByType('meta_vBg_preset')  || '',
+        custom:  vBgFile ? `${uploadsBase}${vBgFile}` : '',
+      },
+      ...socialData,
+    })
   }
 
   const toApiLinks = () => {
@@ -168,40 +171,25 @@ export default function ProfileEditor() {
   const extractUploadFilename = (value) => {
     if (!value) return ''
     const marker = '/uploads/'
-    if (value.includes(marker)) {
-      return value.split(marker).pop() || ''
-    }
-    return ''
+    return value.includes(marker) ? value.split(marker).pop() : value
   }
 
   const uploadImageIfNeeded = async (value) => {
     if (!value) return ''
-    if (value.startsWith('data:')) {
-      const blob = await (await fetch(value)).blob()
-      const ext = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'
-      const file = new File([blob], `upload.${ext}`, { type: blob.type || 'image/jpeg' })
-      const formData = new FormData()
-      formData.append('photo', file)
-      const res = await api.post('/cards/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      return res.data.filename || ''
-    }
-    if (value.startsWith('http')) {
-      const existing = extractUploadFilename(value)
-      if (existing) return existing
-      const response = await fetch(value)
-      const blob = await response.blob()
-      const ext = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'
-      const file = new File([blob], `upload.${ext}`, { type: blob.type || 'image/jpeg' })
-      const formData = new FormData()
-      formData.append('photo', file)
-      const res = await api.post('/cards/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      return res.data.filename || ''
-    }
-    return extractUploadFilename(value)
+    // Already a plain filename — use as-is
+    if (!value.startsWith('data:') && !value.startsWith('http')) return value
+    // Already a server URL — extract filename only, never re-upload
+    if (value.startsWith('http')) return extractUploadFilename(value)
+    // base64 — upload to server and return filename
+    const blob = await (await fetch(value)).blob()
+    const ext = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'
+    const file = new File([blob], `upload.${ext}`, { type: blob.type || 'image/jpeg' })
+    const formData = new FormData()
+    formData.append('photo', file)
+    const res = await api.post('/cards/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data.filename || ''
   }
 
   const saveToBackend = async () => {
@@ -270,6 +258,20 @@ export default function ProfileEditor() {
           }
         }
       }
+      
+      // CRITICAL FIX: Update local state with server URLs after successful save
+      const baseUrl = import.meta.env.VITE_API_BASE?.replace('/api', '') || 'https://kairatechnologies.co.in/demo/vcard'
+      const uploadsBase = `${baseUrl}/uploads/`
+      setAll({
+        profilePhoto: profileFilename ? `${uploadsBase}${profileFilename}` : card.profilePhoto,
+        coverPhoto: coverFilename ? `${uploadsBase}${coverFilename}` : card.coverPhoto,
+        companyLogo: logoFilename ? `${uploadsBase}${logoFilename}` : card.companyLogo,
+        virtualBg: {
+          ...card.virtualBg,
+          custom: virtualBgFilename ? `${uploadsBase}${virtualBgFilename}` : card.virtualBg?.custom || '',
+        },
+      })
+      
       alert('Card saved to server successfully!')
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to save card to server.')

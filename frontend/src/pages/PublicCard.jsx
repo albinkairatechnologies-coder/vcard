@@ -96,7 +96,7 @@ export default function PublicCard() {
   }
 
   const theme = THEMES[card.theme] || THEMES.default
-  const base = 'https://kairatechnologies.co.in/demo/vcard/uploads/'
+  const base = `${import.meta.env.VITE_API_BASE?.replace('/api', '') || 'https://kairatechnologies.co.in/demo/vcard'}/uploads/`
   const getUrl = (filename) => filename ? `${base}${filename}` : null
 
   const linkByType = (type) => card.links?.find(l => l.type === type)?.url || ''

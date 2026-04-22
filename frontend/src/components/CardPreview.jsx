@@ -12,7 +12,7 @@ const ICON_MAP = {
 }
 
 export default function CardPreview({ card = {} }) {
-  const uploadsBase = 'https://kairatechnologies.co.in/demo/vcard/uploads/'
+  const uploadsBase = `${import.meta.env.VITE_API_BASE?.replace('/api', '') || 'https://kairatechnologies.co.in/demo/vcard'}/uploads/`
   const links = card.links || []
 
   const metaByType = (type) => links.find(l => l.type === type)?.url || ''

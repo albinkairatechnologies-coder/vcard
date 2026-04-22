@@ -158,7 +158,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl p-6 border border-gray-100 card-shadow">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Card preview</h2>
-                <Link to="/builder" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                <Link to="/editor" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                   <Pencil size={12} /> Edit
                 </Link>
               </div>

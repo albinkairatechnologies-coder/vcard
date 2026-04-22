@@ -68,7 +68,7 @@ export default function EditorPublicCard() {
   const vBgEnabled = metaByType('meta_vBg_enabled') === 'true'
   const vBgPreset = metaByType('meta_vBg_preset') || ''
   const vBgCustomFile = metaByType('meta_vBg_custom') || ''
-  const uploadsBase = 'https://kairatechnologies.co.in/demo/vcard/uploads/'
+  const uploadsBase = `${import.meta.env.VITE_API_BASE?.replace('/api', '') || 'https://kairatechnologies.co.in/demo/vcard'}/uploads/`
 
   const bgStyle = vBgEnabled
     ? vBgCustomFile
@@ -94,19 +94,10 @@ export default function EditorPublicCard() {
   const coverPhotoUrl = coverFile ? `${uploadsBase}${coverFile}` : ''
   const logoUrl = logoFile ? `${uploadsBase}${logoFile}` : ''
 
-  const saveVCF = async () => {
+  const saveVCF = () => {
     const phone = Array.isArray(card.links) ? card.links.find((l) => l.type === 'phone')?.url || '' : ''
     const website = Array.isArray(card.links) ? card.links.find((l) => l.type === 'website')?.url || '' : ''
 
-    // Try native Contact Picker API (Android Chrome only)
-    if ('contacts' in navigator && 'ContactsManager' in window) {
-      try {
-        await navigator.contacts.select(['name', 'email', 'tel'], { multiple: false })
-        // API only reads, not writes — fall through to vcf
-      } catch {}
-    }
-
-    // Use Web Share API with vcf file (best for iOS + Android)
     const lines = [
       'BEGIN:VCARD', 'VERSION:3.0',
       `FN:${displayName || 'Contact'}`,
@@ -120,23 +111,15 @@ export default function EditorPublicCard() {
     ].filter(Boolean)
 
     const vcfContent = lines.join('\r\n') + '\r\n'
-    const blob = new Blob([vcfContent], { type: 'text/vcard' })
-    const file = new File([blob], `${(displayName || 'contact').replace(/\s+/g, '-').toLowerCase()}.vcf`, { type: 'text/vcard' })
-
-    // Try Web Share with file (Android Chrome — opens native contact import directly)
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: displayName })
-        return
-      } catch {}
-    }
-
-    // Fallback: direct download (iOS Safari, desktop)
+    // Use text/x-vcard for better Android compatibility
+    const blob = new Blob([vcfContent], { type: 'text/x-vcard' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = file.name
+    a.download = `${(displayName || 'contact').replace(/\s+/g, '-').toLowerCase()}.vcf`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
@@ -237,7 +220,7 @@ export default function EditorPublicCard() {
               Share
             </button>
             <button onClick={saveVCF} className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all text-center" style={{ borderColor: themeColor, color: themeColor }}>
-              {ctaLabel || 'Save Contact'}
+              Save Contact
             </button>
           </div>
 
