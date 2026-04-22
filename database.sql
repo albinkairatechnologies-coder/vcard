@@ -55,3 +55,17 @@ CREATE TABLE card_views (
   INDEX idx_card_id (card_id),
   INDEX idx_viewed_at (viewed_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Card leads
+CREATE TABLE card_leads (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  card_id INT NOT NULL,
+  lead_name VARCHAR(120) NOT NULL,
+  lead_email VARCHAR(190) DEFAULT NULL,
+  lead_phone VARCHAR(30) DEFAULT NULL,
+  lead_note TEXT,
+  source VARCHAR(40) NOT NULL DEFAULT 'public_card',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE,
+  INDEX idx_card_id (card_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
