@@ -107,8 +107,9 @@ export default function ProfileEditor() {
     messaging.forEach(key => { socialData[key] = linkByType(key) })
     business.forEach(key => { socialData[key] = linkByType(key) })
 
-    // Single batch update — one localStorage save with ALL fields including images
-    setAll({
+    // Single batch update -- one localStorage save with ALL fields including images
+    // Ensure server URLs are properly constructed and saved
+    const cardData = {
       name:           metaByType('meta_name')           || payload.name    || '',
       jobTitle:       payload.title                     || '',
       department:     metaByType('meta_department')     || '',
@@ -137,7 +138,9 @@ export default function ProfileEditor() {
         custom:  vBgFile ? `${uploadsBase}${vBgFile}` : '',
       },
       ...socialData,
-    })
+    }
+    
+    setAll(cardData)
   }
 
   const toApiLinks = () => {

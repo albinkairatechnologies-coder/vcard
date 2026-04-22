@@ -40,34 +40,25 @@ export function useCardStore() {
       const saved = localStorage.getItem('smartcard_editor')
       if (!saved) return DEFAULT_CARD
       const parsed = JSON.parse(saved)
-      // Clear stale localhost image URLs
-      if (
-        parsed.profilePhoto?.includes('localhost') ||
-        parsed.coverPhoto?.includes('localhost') ||
-        parsed.companyLogo?.includes('localhost') ||
-        parsed.virtualBg?.custom?.includes('localhost')
-      ) {
-        return {
-          ...DEFAULT_CARD, ...parsed,
-          profilePhoto: '',
-          coverPhoto: '',
-          companyLogo: '',
-          virtualBg: { ...(parsed.virtualBg || {}), custom: '' },
-        }
-      }
-      return { ...DEFAULT_CARD, ...parsed }
+      // Clear stale localhost image URLs but keep valid server URLs and data URLs
+      const cleanCard = { ...DEFAULT_CARD, ...parsed }
+      if (cleanCard.profilePhoto?.includes('localhost')) cleanCard.profilePhoto = ''
+      if (cleanCard.coverPhoto?.includes('localhost')) cleanCard.coverPhoto = ''
+      if (cleanCard.companyLogo?.includes('localhost')) cleanCard.companyLogo = ''
+      if (cleanCard.virtualBg?.custom?.includes('localhost')) cleanCard.virtualBg.custom = ''
+      return cleanCard
     } catch { return DEFAULT_CARD }
   })
 
   useEffect(() => {
     const { profilePhoto, coverPhoto, companyLogo, virtualBg, ...rest } = card
-    // Only save http URLs and data: URLs (for unsaved uploads), clear blob: URLs
+    // Save http URLs, data: URLs (for unsaved uploads), and relative filenames, clear blob: URLs only
     localStorage.setItem('smartcard_editor', JSON.stringify({
       ...rest,
-      profilePhoto: (profilePhoto?.startsWith('http') || profilePhoto?.startsWith('data:')) ? profilePhoto : '',
-      coverPhoto: (coverPhoto?.startsWith('http') || coverPhoto?.startsWith('data:')) ? coverPhoto : '',
-      companyLogo: (companyLogo?.startsWith('http') || companyLogo?.startsWith('data:')) ? companyLogo : '',
-      virtualBg: { ...virtualBg, custom: (virtualBg?.custom?.startsWith('http') || virtualBg?.custom?.startsWith('data:')) ? virtualBg.custom : '' },
+      profilePhoto: (profilePhoto?.startsWith('http') || profilePhoto?.startsWith('data:') || (!profilePhoto?.includes('localhost') && profilePhoto?.trim())) ? profilePhoto : '',
+      coverPhoto: (coverPhoto?.startsWith('http') || coverPhoto?.startsWith('data:') || (!coverPhoto?.includes('localhost') && coverPhoto?.trim())) ? coverPhoto : '',
+      companyLogo: (companyLogo?.startsWith('http') || companyLogo?.startsWith('data:') || (!companyLogo?.includes('localhost') && companyLogo?.trim())) ? companyLogo : '',
+      virtualBg: { ...virtualBg, custom: (virtualBg?.custom?.startsWith('http') || virtualBg?.custom?.startsWith('data:') || (!virtualBg?.custom?.includes('localhost') && virtualBg?.custom?.trim())) ? virtualBg.custom : '' },
     }))
   }, [card])
 
