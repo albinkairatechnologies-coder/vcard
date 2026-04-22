@@ -12,7 +12,7 @@ const ICON_MAP = {
 }
 
 export default function CardPreview({ card = {} }) {
-  const uploadsBase = `${window.location.protocol}//${window.location.hostname}/smartcard/backend/uploads/`
+  const uploadsBase = 'https://kairatechnologies.co.in/demo/vcard/uploads/'
   const links = card.links || []
 
   const metaByType = (type) => links.find(l => l.type === type)?.url || ''

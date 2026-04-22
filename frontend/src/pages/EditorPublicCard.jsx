@@ -68,7 +68,7 @@ export default function EditorPublicCard() {
   const vBgEnabled = metaByType('meta_vBg_enabled') === 'true'
   const vBgPreset = metaByType('meta_vBg_preset') || ''
   const vBgCustomFile = metaByType('meta_vBg_custom') || ''
-  const uploadsBase = `${window.location.protocol}//${window.location.hostname}/smartcard/backend/uploads/`
+  const uploadsBase = 'https://kairatechnologies.co.in/demo/vcard/uploads/'
 
   const bgStyle = vBgEnabled
     ? vBgCustomFile
