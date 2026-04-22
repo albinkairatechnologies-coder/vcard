@@ -1,9 +1,9 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_PORT', '3306'); // or whatever port your MySQL uses
-define('DB_NAME', 'smartcard');
-define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_PORT', '3306');
+define('DB_NAME', 'kairatec_mobilevcard');
+define('DB_USER', 'YOUR_BLUEHOST_DB_USER');
+define('DB_PASS', 'YOUR_BLUEHOST_DB_PASS');
 
 function getDB(): PDO {
     static $pdo = null;

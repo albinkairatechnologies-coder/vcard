@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-define('JWT_SECRET', 'your-secret-key-change-this-in-production');
+define('JWT_SECRET', 'kairatec_vcard_secret_2024_!@#$%');
 define('JWT_ALGORITHM', 'HS256');
 
 function encodeJWT(array $payload): string {

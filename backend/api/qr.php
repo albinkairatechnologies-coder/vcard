@@ -39,7 +39,7 @@ if ($target && !filter_var($target, FILTER_VALIDATE_URL)) {
     jsonError(422, 'Invalid target URL.');
 }
 
-$cardUrl = $target ?: ('http://localhost:5173/card/' . $slug);
+$cardUrl = $target ?: ('https://vcardfrontendnew.vercel.app/card/' . $slug);
 
 $options = new QROptions([
     'outputType'  => QRCode::OUTPUT_IMAGE_PNG,
