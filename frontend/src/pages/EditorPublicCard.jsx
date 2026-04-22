@@ -94,23 +94,48 @@ export default function EditorPublicCard() {
   const coverPhotoUrl = coverFile ? `${uploadsBase}${coverFile}` : ''
   const logoUrl = logoFile ? `${uploadsBase}${logoFile}` : ''
 
-  const saveVCF = () => {
+  const saveVCF = async () => {
+    const phone = Array.isArray(card.links) ? card.links.find((l) => l.type === 'phone')?.url || '' : ''
+    const website = Array.isArray(card.links) ? card.links.find((l) => l.type === 'website')?.url || '' : ''
+
+    // Try native Contact Picker API (Android Chrome only)
+    if ('contacts' in navigator && 'ContactsManager' in window) {
+      try {
+        await navigator.contacts.select(['name', 'email', 'tel'], { multiple: false })
+        // API only reads, not writes — fall through to vcf
+      } catch {}
+    }
+
+    // Use Web Share API with vcf file (best for iOS + Android)
     const lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
+      'BEGIN:VCARD', 'VERSION:3.0',
       `FN:${displayName || 'Contact'}`,
+      `N:${displayName || 'Contact'};;;;`,
       displayCompany ? `ORG:${displayCompany}` : '',
-      card.title ? `TITLE:${card.title}` : '',
-      (Array.isArray(card.links) ? card.links.find((l) => l.type === 'phone')?.url : '') ? `TEL;TYPE=CELL:${card.links.find((l) => l.type === 'phone')?.url}` : '',
-      displayEmail ? `EMAIL;TYPE=INTERNET:${displayEmail}` : '',
-      (Array.isArray(card.links) ? card.links.find((l) => l.type === 'website')?.url : '') ? `URL:${card.links.find((l) => l.type === 'website')?.url}` : '',
+      card.title     ? `TITLE:${card.title}`   : '',
+      phone          ? `TEL;TYPE=CELL:${phone}` : '',
+      displayEmail   ? `EMAIL;TYPE=INTERNET:${displayEmail}` : '',
+      website        ? `URL:${website}` : '',
       'END:VCARD',
     ].filter(Boolean)
-    const blob = new Blob([lines.join('\n')], { type: 'text/vcard;charset=utf-8' })
+
+    const vcfContent = lines.join('\r\n') + '\r\n'
+    const blob = new Blob([vcfContent], { type: 'text/vcard' })
+    const file = new File([blob], `${(displayName || 'contact').replace(/\s+/g, '-').toLowerCase()}.vcf`, { type: 'text/vcard' })
+
+    // Try Web Share with file (Android Chrome — opens native contact import directly)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: displayName })
+        return
+      } catch {}
+    }
+
+    // Fallback: direct download (iOS Safari, desktop)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${(displayName || 'contact').replace(/\s+/g, '-').toLowerCase()}.vcf`
+    a.download = file.name
     a.click()
     URL.revokeObjectURL(url)
   }
